@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time
 from moviepy.editor import VideoFileClip
 from skimage.transform import resize
 from tensorflow import keras
@@ -21,8 +22,7 @@ def road_lines(image):
     """
 
     # Get image ready for feeding into model
-    small_img = resize(image, (80, 160, 3))
-    small_img = np.array(small_img)
+    small_img = np.array(resize(image, (80, 160, 3)))
     small_img = small_img[None, :, :, :]
 
     # Make prediction with neural network (un-normalize value by multiplying by 255)
@@ -45,7 +45,7 @@ def road_lines(image):
     lane_image = resize(lane_drawn, (720, 1280, 3))
 
     # Merge the lane drawing onto the original image
-    result = cv2.addWeighted(image, 1, lane_image, 1, 1, dtype=cv2.CV_64F)
+    result = cv2.addWeighted(image, 1, lane_image, 1, 1, dtype=cv2.CV_32F)
 
     return result.astype(np.uint8)
 
@@ -70,6 +70,9 @@ def preview_video(input_location: str) -> None:
 
     cap = cv2.VideoCapture(input_location)
 
+    prev_frame_time = 0
+    new_frame_time = 0
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -78,14 +81,28 @@ def preview_video(input_location: str) -> None:
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
+        new_frame_time = time.time()
         annotated_frame = road_lines(frame)
+        fps = "FPS " + str(int(1 / (new_frame_time - prev_frame_time)))
+        prev_frame_time = new_frame_time
+
+        cv2.putText(
+            annotated_frame,
+            fps,
+            (7, 70),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            2,
+            (100, 255, 0),
+            3,
+            cv2.LINE_AA,
+        )
         cv2.imshow("Result", annotated_frame)
 
     cap.release()
 
 
 ###################
-#       DRIVER    #
+#     DRIVER      #
 ###################
 if __name__ == "__main__":
     MODEL_LOCATION = "full_CNN_model.h5"
