@@ -105,9 +105,9 @@ def preview_video(input_location: str) -> None:
 #     DRIVER      #
 ###################
 if __name__ == "__main__":
-    MODEL_LOCATION = "full_CNN_model.h5"
+    MODEL_LOCATION = "new_full_CNN_model.h5"
     INPUT_VIDEO_LOCATION = "project_video.mp4"
-    OUTPUT_VIDEO_LOCATION = "proj_reg_video.mp4"
+    OUTPUT_VIDEO_LOCATION = "proj_reg_vid.mp4"
 
     # Load Keras model
     model = keras.models.load_model(MODEL_LOCATION)
